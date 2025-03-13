@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++ -rdynamic CMakeFiles/echoServer.dir/echoServer.cc.o -o /root/CProject/mymuduo/example/echoServer  -Wl,-rpath,/root/CProject/mymuduo/lib /root/CProject/mymuduo/lib/libtiny_network.so -lpthread -lmysqlclient 

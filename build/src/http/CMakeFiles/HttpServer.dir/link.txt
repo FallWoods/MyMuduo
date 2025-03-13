@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++ -rdynamic CMakeFiles/HttpServer.dir/HttpServer.cc.o CMakeFiles/HttpServer.dir/HttpResponse.cc.o CMakeFiles/HttpServer.dir/HttpContext.cc.o CMakeFiles/HttpServer.dir/main.cc.o -o /root/CProject/mymuduo/src/http/HttpServer  -Wl,-rpath,/root/CProject/mymuduo/lib /root/CProject/mymuduo/lib/libtiny_network.so -lpthread -lmysqlclient 

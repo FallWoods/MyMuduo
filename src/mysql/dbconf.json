@@ -1,0 +1,11 @@
+{
+    "ip":"192.168.10.135",
+    "port":3306,
+    "userName":"remote_user",
+    "password":"jiuyouziqu0317@Li",
+    "dbName":"testbase",
+    "minSize":100,
+    "maxSize":1024,
+    "maxIdleTime":5000,
+    "Timeout":100
+}

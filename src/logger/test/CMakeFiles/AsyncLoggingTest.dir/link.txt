@@ -1,0 +1,1 @@
+/opt/rh/devtoolset-8/root/usr/bin/c++ -rdynamic CMakeFiles/AsyncLoggingTest.dir/AsyncLoggingTest.cc.o -o AsyncLoggingTest  -Wl,-rpath,/root/CProject/mymuduo/lib ../../../lib/libtiny_network.so -lpthread -lmysqlclient 
