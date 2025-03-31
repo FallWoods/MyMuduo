@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/root/CProject/mymuduo/example/echoServer"
-  "/root/CProject/mymuduo/example/echoServer.pdb"
+  "/home/fallwoods/CppProject/mymuduo/example/echoServer"
+  "/home/fallwoods/CppProject/mymuduo/example/echoServer.pdb"
   "CMakeFiles/echoServer.dir/echoServer.cc.o"
   "CMakeFiles/echoServer.dir/echoServer.cc.o.d"
 )

@@ -31,7 +31,7 @@ public:
 
 
 // Logger主要为用户（前端线程）提供使用日志库的接口，
-//是一个pointer to impl的实现（即GoF 桥接模式），详细由内部类Impl实现。
+// 是一个pointer to impl的实现（即GoF 桥接模式），详细由内部类Impl实现。
 class Logger : noncopyable {
 public:
     enum LogLevel {
@@ -74,7 +74,7 @@ private:
      public:
         using LogLevel = Logger::LogLevel;
         Impl(LogLevel level, int savedErrno, const char* file, int line);
-        // 格式化当前时间字符串, 也是一条log消息的开头
+        // 格式化当前时间为字符串, 也是一条log消息的开头
         void formatTime();
         // 添加一条log消息的后缀
         void finish();
@@ -87,7 +87,7 @@ private:
         LogLevel level_;
         // 源代码所在行
         int line_;
-        // 文件名，不包含路径
+        // 所在的源代码文件名，不包含路径
         SourceFile basename_;
     };
 
@@ -109,6 +109,7 @@ const char* getErrnoMsg(int savedErrno);
  * 当日志的等级大于当前日志等级，才会被输出
  * 比如设置等级为FATAL，则logLevel等级大于DEBUG和INFO，DEBUG和INFO等级的日志就不会输出
  */
+
 // 每个宏定义都构造了一个Logger临时对象，然后通过stream()返回一个流，来达到写日志的功能。
 
 // __FILE__ 是一个宏, 表示当前代码所在文件名（含路径）

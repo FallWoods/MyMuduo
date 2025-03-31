@@ -4,9 +4,7 @@
 #include <assert.h>
 
 EventLoopThread::EventLoopThread(const ThreadInitCallback& cb, const std::string& name)
-    : exiting_(false),
-      loop_(nullptr),
-      thread_(std::bind(&EventLoopThread::threadFunc,this),name),
+    : thread_(std::bind(&EventLoopThread::threadFunc, this), name),
       callback_(cb){}
 
 EventLoopThread::~EventLoopThread() {
@@ -23,11 +21,11 @@ EventLoop* EventLoopThread::startLoop(){
     EventLoop* loop = nullptr;
     std::unique_lock<std::mutex> lk(mutex_);
     //等待start()函数启动loop结束，此时，loop_不为空
-    cond_.wait(lk,[&](){
+    cond_.wait(lk, [&](){
         return loop_ != nullptr;
     });
 
-    loop=loop_;
+    loop = loop_;
     return loop;
 }
 
@@ -41,8 +39,8 @@ void EventLoopThread::threadFunc(){
     {
         std::lock_guard<std::mutex> lk(mutex_);
         loop_ = &loop;
-        cond_.notify_all();
     }
+    cond_.notify_all();
     // 执行EventLoop的loop() 开启了底层的Poller的poll()
     // 这个是subLoop
     loop.loop();

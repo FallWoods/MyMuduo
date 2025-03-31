@@ -3,9 +3,6 @@
 namespace CurrentThread{
 
 __thread int t_cachedTid = 0;
-// thread_local char t_tidString[32];
-// thread_local int t_tidStringLength;
-// thread_local const char* t_threadName;
 
 void cachedTid() {
     if (t_cachedTid == 0) {

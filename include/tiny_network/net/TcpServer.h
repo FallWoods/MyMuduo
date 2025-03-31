@@ -37,7 +37,7 @@ public:
     TcpServer(EventLoop* loop,
                 const InetAddress& listenAddr,
                 const std::string& nameArg,
-                Option option=kNoReusePort);
+                Option option = kNoReusePort);
     ~TcpServer();
 
     const std::string ipPort() const { return ipPort_; }
@@ -85,8 +85,8 @@ public:
 private:
     // 同样是连接回调，TcpServer::newConnection()和connectionCallback_有何区别？
     // 前者是Acceptor发生连接请求事件时，回调，用来新建一个Tcp连接；后者是在TcpServer内部新建连接即调用TcpServer::newConnection()时，回调connectionCallback_。
-    //Not thread safe,but in loop
     //用于建立新连接
+    //Not thread safe,but in loop
     void newConnnection(int sockfd,const InetAddress& peerAddr);
     
     //用于移除一个TcpConnection对象，被设置为TcpConnection的CloseCallback
@@ -98,14 +98,14 @@ private:
      * key:     std::string
      * value:   std::shared_ptr<TcpConnection> 
      */
-    using ConnectionMap=std::map<std::string,TcpConnectionPtr>;
+    using ConnectionMap = std::map<std::string, TcpConnectionPtr>;
     
     EventLoop* loop_;
     const std::string ipPort_;
     const std::string name_;
     std::unique_ptr<Acceptor> acceptor_;
     std::shared_ptr<EventLoopThreadPool> threadPool_;
-    //由具体的服务器类的成员函数包装而成，被设置为TcpConnection的回调
+    //由具体的服务器类的成员函数包装而成
     ConnectionCallback connectionCallback_;  // 有新连接或连接断开时的回调函数
     MessageCallback messageCallback_;  // 有读写消息时的回调函数
     WriteCompleteCallback writeCompleteCallback_;  // 应用层缓冲区的消息发送完以后的回调函数

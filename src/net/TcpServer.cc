@@ -10,7 +10,7 @@ TcpServer::TcpServer(EventLoop* loop,const InetAddress& listenAddr,
     : loop_(loop),
       ipPort_(listenAddr.toIpPort()),
       name_(nameArg),
-      acceptor_(new Acceptor(loop,listenAddr,option == kReusePort)),
+      acceptor_(new Acceptor(loop, listenAddr, option == kReusePort)),
       threadPool_(new EventLoopThreadPool(loop, name_)),
       connectionCallback_(),
       messageCallback_(),
@@ -20,7 +20,7 @@ TcpServer::TcpServer(EventLoop* loop,const InetAddress& listenAddr,
       nextConnTd_(1){
     // 设置用于新建连接的回调
     // 当有新用户连接时，Acceptor类中绑定的acceptChannel_会有读事件发生执行handleRead()调用TcpServer::newConnection回调建立新连接
-    acceptor_->setNewConnectionCallback(std::bind(&TcpServer::newConnnection,this,_1,_2));
+    acceptor_->setNewConnectionCallback(std::bind(&TcpServer::newConnnection, this, _1, _2));
 }
 
 /**
@@ -32,11 +32,11 @@ TcpServer::~TcpServer() {
     // reset all connection of @connections_
     for (auto& item : connections_) {
         TcpConnectionPtr conn(item.second);
-        // 把原始的智能指针复位,让栈空间的TcpConnectionPtr conn指向该对象 当conn出了其作用域,即可释放智能指针指向的对象
+        // 把原始的智能指针复位,让栈空间的TcpConnectionPtr conn指向该对象，当conn出了其作用域,即可释放智能指针指向的对象
         item.second.reset();
         // 销毁连接
         conn->getLoop()->runInLoop(
-                std::bind(&TcpConnection::connectDestroyed,conn));
+                std::bind(&TcpConnection::connectDestroyed, conn));
     }
 }
 
@@ -48,7 +48,7 @@ void TcpServer::start() {
         // 启动底层的lopp线程池
         threadPool_->start(threadInitCallback_);
         assert(!acceptor_->listening());
-        loop_->runInLoop(std::bind(&Acceptor::listen,acceptor_.get()));
+        loop_->runInLoop(std::bind(&Acceptor::listen, acceptor_.get()));
     }
 }
 
@@ -70,20 +70,19 @@ void TcpServer::newConnnection(int sockfd, const InetAddress& peerAddr) {
     ++nextConnTd_;
     std::string connName = name_ + sbuf.str();
     //log
-    std::cout << "TcpServer::newConnection [" << name_.c_str() << "] - new connection [" << connName.c_str() << "] from " << peerAddr.toIpPort().c_str() <<std::endl;
+    std::cout << "TcpServer::newConnection [" << name_ << "] - new connection [" << connName << "] from " << peerAddr.toIpPort() <<std::endl;
     //获取套接字在本地的地址信息
     sockaddr_in local;
     ::memset(&local, 0, sizeof(local));
     socklen_t addrlen = sizeof(local);
-    if(::getsockname(sockfd, (sockaddr *)&local, &addrlen) < 0)
-    {
+    if(::getsockname(sockfd, (sockaddr *)&local, &addrlen) < 0) {
         std::cout << "sockets::getLocalAddr() failed" <<std::endl;
     }
     InetAddress localAddr(local);
     // FIXME poll with zero timeout to double confirm the new connection
     // FIXME use make_shared if necessary
-    TcpConnectionPtr conn(std::make_shared<TcpConnection>(ioLoop,connName,sockfd,
-                            localAddr,peerAddr));
+    TcpConnectionPtr conn(std::make_shared<TcpConnection>(ioLoop, connName, sockfd,
+                            localAddr, peerAddr));
     connections_[connName] = conn;
     /* 为新建TcpConnection对象设置各种回调 */
     // 下面的3个回调都是用户设置给TcpServer => TcpConnection的，至于Channel绑定的则是TcpConnection设置的四个，handleRead,handleWrite... 这下面的回调用于handlexxx函数中
@@ -92,14 +91,14 @@ void TcpServer::newConnnection(int sockfd, const InetAddress& peerAddr) {
     conn->setWriteCompleteCallback(writeCompleteCallback_);
     // 设置如何关闭连接的回调
     conn->setCloseCallback(
-            std::bind(&TcpServer::removeConnnection,this,std::placeholders::_1));
+            std::bind(&TcpServer::removeConnnection, this, std::placeholders::_1));
     
-    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished,conn));
+    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
 }
 
 void TcpServer::removeConnnection(const TcpConnectionPtr& conn) {
     // FIXME: unsafe
-    loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop,this,conn));
+    loop_->runInLoop(std::bind(&TcpServer::removeConnectionInLoop, this, conn));
 }
 
 /**
@@ -112,5 +111,5 @@ void TcpServer::removeConnectionInLoop(const TcpConnectionPtr& conn) {
     // 从ConnectionMap中擦除待移除TcpConnection对象
     connections_.erase(conn->name());
     EventLoop* ioLoop = conn->getLoop();
-    ioLoop->queueInLoop(std::bind(&TcpConnection::connectDestroyed,conn));
+    ioLoop->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
 }

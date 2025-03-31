@@ -26,7 +26,6 @@ void FileUtil::append(const char* data, size_t len){
             int err = ferror(fp_);
             if (err) {
                 fprintf(stderr, "FileUtil::append() failed %s\n", getErrnoMsg(err));
-                // clear error indicators for fp_
                 clearerr(fp_);
                 break;
             }

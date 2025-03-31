@@ -8,17 +8,13 @@
 std::atomic_int32_t Thread::numCreated_{0};
 
 Thread::Thread(ThreadFunc func, const std::string& name)
-    : started_(false),
-      joined_(false),
-      tid_(0),
-      func_(std::move(func)),
+    : func_(std::move(func)),
       name_(name){
     setDefaultName();    
 }
 
 Thread::~Thread() {
     if (started_ && !joined_) {
-        //如果线程已将开始，但还没有join,就分离
         thread_->detach();
     }
 }
@@ -26,7 +22,7 @@ Thread::~Thread() {
 void Thread::start() {
     std::condition_variable cond;
     std::mutex m;
-    bool isReady=false;
+    bool isReady = false;
     started_ = true;
     thread_ = std::make_shared<std::thread>([&]{
         //获取线程的tid值
@@ -50,16 +46,16 @@ void Thread::join() {
     if (thread_->joinable()) {
         thread_->join();
     }
-    joined_=true;
+    joined_ = true;
 }
 
 
 
 void Thread::setDefaultName() {
-    int num=++numCreated_;
+    int num = ++numCreated_;
     if (name_.empty()) {
         std::ostringstream ostr;
-        ostr<<"Thread "<<num;
-        name_=ostr.str();
+        ostr << "Thread " << num;
+        name_ = ostr.str();
     }
 }

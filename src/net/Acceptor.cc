@@ -9,21 +9,19 @@
 static int createNonblocking()
 {
     int sockfd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
-    if (sockfd < 0)
-    {
+    if (sockfd < 0) {
         std::cout << "listen socket create err " << errno <<std::endl;
         // LOG_FATAL("%s:%s:%d listen socket create err:%d \n", __FILE__, __FUNCTION__, __LINE__, errno);
     }
     return sockfd;
 }
 
-Acceptor::Acceptor(EventLoop* loop,const InetAddress& listenAddr,bool reuseport)
+Acceptor::Acceptor(EventLoop* loop,const InetAddress& listenAddr, bool reuseport)
     : loop_(loop),
       acceptSocket_(createNonblocking()),
-      acceptChannel_(loop,acceptSocket_.fd()),
-      listening_(false)
+      acceptChannel_(loop, acceptSocket_.fd())
       /*idleFd_(::open("/dev/null",O_RDONLY | O_CLOEXEC))*/{
-    acceptSocket_.setRuesAddr(true);
+    acceptSocket_.setReuseAddr(true);
     acceptSocket_.setReusePort(reuseport);
     acceptSocket_.bindAddress(listenAddr);
     /**
@@ -70,8 +68,8 @@ void Acceptor::handleRead(Timestamp when) {
     if(connfd >= 0) {
         // TcpServer::NewConnectionCallback_
         if(newConnectionCallback_) {
-            //如果用于新建连接（即创建TcpConnection）的回调函数已经设置好，则调用之
-            newConnectionCallback_(connfd,peerAddr);
+            //如果用于创建TcpConnection的回调函数已经设置好，则调用之
+            newConnectionCallback_(connfd, peerAddr);
         } else {
             // LOG_DEBUG("connfd < 0 accept failed");
             std::cout << "no newConnectionCallback() function" <<std::endl;
@@ -79,7 +77,6 @@ void Acceptor::handleRead(Timestamp when) {
         }
     }else{
         //发生错误
-        //log
          /*
          * Read the section named "The special problem of
          * accept()ing when you can't" in libev's doc.

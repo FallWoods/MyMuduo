@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <netdb.h>
-// //转换用的临时缓存. 因为占用空间比较大, 不用函数栈; 又要确保线程安全, 
-// //有可能经常调用, 因此用thread local 变量
+// 转换用的临时缓存. 因为占用空间比较大, 不用函数栈; 又要确保线程安全, 
+// 有可能经常调用, 因此用thread local 变量
 // static __thread char t_resolveBuffer[64*1024];
 InetAddress::InetAddress(uint16_t port, std::string ip)
 {

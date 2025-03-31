@@ -21,7 +21,7 @@ public:
                 int flushInterval = 3);
     ~AsyncLogging();
 
-    // 前端调用append写入日志
+    // 把此成员函数设为前端输出函数，则前端调用append把日志写入缓冲区
     void append(const char* logling, int len);
 
     void start() {
@@ -50,17 +50,18 @@ private:
     // 冲刷缓冲数据到文件的超时时间, 默认3秒
     const int flushInterval_;
     // 后端线程是否运行标志
-    std::atomic<bool> running_;
+    std::atomic<bool> running_ = false;
     // 日志文件基本名称
     const std::string basename_;
     // 日志文件滚动大小
     const off_t rollSize_;
     // 后端线程
     Thread thread_;
-    // 保护前端线程的buffers_
-    std::mutex mutex_;
     std::condition_variable cond_;
 
+    // 保护buffers_
+    std::mutex mutex_;
+    
     BufferPtr currentBuffer_;  // 当前缓冲
     BufferPtr nextBuffer_;     // 备用空闲缓冲
     BufferVector buffers_;     // 已满缓冲队列

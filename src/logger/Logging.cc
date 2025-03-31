@@ -21,10 +21,11 @@ Logger::LogLevel initLogLevel() {
 
 Logger::LogLevel g_logLevel = initLogLevel();
 
+// 默认的日志输出函数，即日志默认被输出到终端中
 static void defaultOutput(const char* data, int len) {
     fwrite(data, len, sizeof(char), stdout);
 }
-
+// 默认刷新函数
 static void defaultFlush(){
     fflush(stdout);
 }
@@ -38,7 +39,7 @@ Logger::Impl::Impl(Logger::LogLevel level, int savedErrno, const char* file, int
       level_(level),
       line_(line),
       basename_(file) {
-    // 写入当前时间
+    // 把当前时间写入日志流
     formatTime();
     // 写入日志等级
     stream_ << GeneralTemplate(getLevelName[level], 6);
@@ -65,7 +66,7 @@ void Logger::Impl::formatTime() {
     //     tm_time->tm_sec);
     // 更新最后一次调用发生的时间
     ThreadInfo::t_lastSecond = static_cast<time_t>(now.microSecondsSinceEpoch() / Timestamp::kMicroSecondsPerSecond);
-    //写入线程存储的时间buf中
+    // 写入线程存储的时间buf中
     snprintf(ThreadInfo::t_time, sizeof ThreadInfo::t_time, now.toFormattedString().c_str());
     //把微妙数转换成字符串形式
     // char buf[32] = {0};
@@ -80,7 +81,7 @@ void Logger::Impl::finish() {
     << ":" << line_ << '\n';
 }
 
-// level默认为INFO等级
+// level默认为INFO等级，file指的是所在源代码的文件，用__FILE__宏赋值
 Logger::Logger(const char* file, int line)
     : impl_(INFO, 0, file, line){}
 

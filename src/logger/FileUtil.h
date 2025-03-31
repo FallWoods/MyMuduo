@@ -10,7 +10,7 @@ public:
     explicit FileUtil(const std::string& fileName);
     ~FileUtil();
 
-    // 添加log消息到文件末尾
+    // 添加log消息到文件的缓冲区
     void append(const char* data, size_t len);
     // 冲刷文件内容到磁盘
     void flush() {
@@ -34,7 +34,8 @@ private:
     }
     // 文件指针
     FILE* fp_;
-    char buffer_[64 * 1024];  // fp_的缓冲区
+    // fp_的缓冲区
+    char buffer_[64 * 1024];
     // off_t用于指示文件的偏移量，表示已经写了多少字节
     off_t writtenBytes_;
 };

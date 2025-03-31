@@ -63,8 +63,7 @@ void resetTimerfd(int timerfd, Timestamp expiration){
 TimerQueue::TimerQueue(EventLoop* loop)
     : loop_(loop),
       timerfd_(createTimerfd()),
-      timerfdChannel_(loop,timerfd_),
-      callingExpiredTimers_(false){
+      timerfdChannel_(loop, timerfd_){
     timerfdChannel_.setReadCallback(std::bind(&TimerQueue::handleRead, this));
     // we are always reading the timerfd, we disrm it with timerfd_settime.
     timerfdChannel_.enableReading();
@@ -112,7 +111,7 @@ void TimerQueue::addTimer(TimerCallback cb, Timestamp when, double interval) {
 
 void TimerQueue::addtimerInLoop(Timer* timer) {
     //新增的定时器的到期时间是否是最早的
-    bool earliestChanged=insert(timer);
+    bool earliestChanged = insert(timer);
     if (earliestChanged) {
         //最近的Timer超时时刻发生了改变，需重新设置timerfd，timerfd的超时时刻应始终为最近的Timer超时时刻
         resetTimerfd(timerfd_, timer->expiration());
@@ -133,7 +132,6 @@ bool TimerQueue::insert(Timer* timer){
     timers_.insert(Entry(when, timer));
     
     return earliestChanged;
-
 }
 
 /**
@@ -143,7 +141,6 @@ bool TimerQueue::insert(Timer* timer){
 * 发生超时事件时, 可能会有多个超时任务超时, 需要通过getExpired一次性全部获取, 然后逐个执行回调.
 * @note timerfd只会发生读事件.
 */
-
 void TimerQueue::handleRead() {
     Timestamp now(Timestamp::now());
     //先处理Timerfd的超时事件，再处理自定义的Timer的超时
@@ -180,7 +177,7 @@ std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now) {
     //将set timers_中超时的pair对存放到getExpired中
     std::copy(timers_.begin(), end, std::back_inserter(expired));
     //将超时的Timer删除
-    timers_.erase(timers_.begin(),end);
+    timers_.erase(timers_.begin(), end);
     return expired;
 }
 

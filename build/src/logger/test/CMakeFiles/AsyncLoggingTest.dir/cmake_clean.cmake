@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/root/CProject/mymuduo/src/logger/test/AsyncLoggingTest"
-  "/root/CProject/mymuduo/src/logger/test/AsyncLoggingTest.pdb"
+  "/home/fallwoods/CppProject/mymuduo/src/logger/test/AsyncLoggingTest"
+  "/home/fallwoods/CppProject/mymuduo/src/logger/test/AsyncLoggingTest.pdb"
   "CMakeFiles/AsyncLoggingTest.dir/AsyncLoggingTest.cc.o"
   "CMakeFiles/AsyncLoggingTest.dir/AsyncLoggingTest.cc.o.d"
 )

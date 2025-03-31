@@ -4,11 +4,11 @@
 #include "Timer.h"
 #include "copyable.h"
 
-class TimerId:public copyable{
+class TimerId: public copyable{
 friend class TimerQueue;
 public:
     TimerId();
-    TimerId(Timer*,int64_t);
+    TimerId(Timer*, int64_t);
 private:
     Timer* timer_;
     int64_t sequence_;

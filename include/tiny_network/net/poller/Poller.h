@@ -8,9 +8,9 @@
 #include <vector>
 #include <map>
 
-//支持poll, epoll
-//只有拥有EventLoop的IO线程，才能调用EventLoop所拥有的Poller对象的接口，
-//因此考虑Poller的线程安全不是必要的。
+// 支持poll, epoll
+// 只有拥有EventLoop的IO线程，才能调用EventLoop所拥有的Poller对象的接口，
+// 因此考虑Poller的线程安全不是必要的。
 class Poller : noncopyable {
 public:
     using ChannelList = std::vector<Channel*>;
@@ -24,7 +24,7 @@ public:
      * 监听函数，根据激活的通道列表，监听指定fd的相应事件
      * 对于PollPoller会调用poll, 对于EPollPoller会调用epoll_wait
      *
-     * 返回调用完epoll_wait/poll的当前时间（Timestamp对象）
+     * 返回调用完epoll_wait/poll的当前时刻（Timestamp对象）
      */
     virtual Timestamp poll(int timeoutsMs, ChannelList& activeChannels) = 0;
 
@@ -54,9 +54,7 @@ protected:
 
 private:
     // void fillActiveChannels(int numEvents,ChannelList& activeChannels)const;
-
     // using PollFdList=std::vector<struct pollfd>;
-
     EventLoop* ownerLoop_;  // 它所属的EventLoop
     // PollFdList pollfds_; // 记录要监视的文件描述符
 };

@@ -9,7 +9,6 @@
 //时间戳类，用来表示一个时刻
 class Timestamp : public copyable {
 public:
-    //1秒等于几微妙
     static const int64_t kMicroSecondsPerSecond = 1000 * 1000;
     
     Timestamp();
@@ -39,8 +38,7 @@ public:
     static Timestamp fromUnixTime(time_t t);
     static Timestamp fromUnixTime(time_t t, int microseconds);
 
-    // 获取时间戳所表示的数值
-    // 微秒数
+    // 获取时间戳所表示的数值，微秒数
     int64_t microSecondsSinceEpoch() const {
         return microSecondsSinceEpoch_;
     }

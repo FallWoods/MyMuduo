@@ -10,7 +10,7 @@ const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = POLLIN | POLLPRI;
 const int Channel::kWriteEvent = POLLOUT;
 
-Channel::Channel(EventLoop* loop,int fd)
+Channel::Channel(EventLoop* loop, int fd)
     : loop_(loop),
 	  fd_(fd),
 	  events_(POLLIN),
@@ -80,12 +80,12 @@ void Channel::handleEventWithGuard(Timestamp receiveTime) {
         }
     } else if (revents_ & (POLLIN | POLLPRI)) {
         // 读事件
-        // 有待读数据, 或 紧急数据(e.g. TCP带外数据)或对方断开了连接
+        // 有待读数据, 或 紧急数据(e.g. TCP带外数据)或 对方断开了连接（发送一个EOF）
         if (readCallback_) {
             readCallback_(receiveTime);
         }
     } else if (revents_ & POLLOUT) {
-        // 写事件
+        // 可写事件
         if (writeCallback_) {
             writeCallback_();
         }

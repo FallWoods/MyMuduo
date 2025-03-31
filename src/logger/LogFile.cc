@@ -35,7 +35,9 @@ void LogFile::appendInLock(const char* data, int len) {
             count_ = 0;
             time_t now = ::time(NULL);
             // 计算现在是第几天
+            // 计算现在是第几天 now/kRollPerSeconds会取整，求现在是第几天，忽略不满一天的时间，再乘以秒数相当于是当前天数0点对应的秒数
             time_t thisPeriod = now / kRollPerSeconds_ * kRollPerSeconds_;
+            // 至少一天一滚
             if (thisPeriod != startOfPeriod_) {
                 rollFile();
             } else if (now - lastFlush_ > flushInterval_) {

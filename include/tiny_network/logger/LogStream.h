@@ -30,10 +30,8 @@ public:
     const Buffer& buffer() const { return buffer_; }
     void resetBuffer() { buffer_.reset(); }
     
-    /**
-     * 我们的LogStream需要重载运算符
-     */
     // 这些运算符将内容写入LogStream中，即LogStream的buffer缓冲区中
+    LogStream& operator<<(char);
     LogStream& operator<<(short);
     LogStream& operator<<(unsigned short);
     LogStream& operator<<(int);
@@ -46,7 +44,6 @@ public:
     LogStream& operator<<(float);
     LogStream& operator<<(double);
 
-    LogStream& operator<<(char);
     LogStream& operator<<(const void*);
     LogStream& operator<<(const char*);
     inline LogStream& operator<<(const unsigned char*);

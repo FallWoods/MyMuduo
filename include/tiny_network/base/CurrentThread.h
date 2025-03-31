@@ -14,7 +14,7 @@ extern __thread int t_cachedTid;
 void cachedTid();
 
 inline int tid(){
-    if(__builtin_expect(t_cachedTid==0,0)){
+    if(__builtin_expect(t_cachedTid == 0, 0)) {
         //如果t_cachedTid==0，则获取线程的tid
         cachedTid();
     }

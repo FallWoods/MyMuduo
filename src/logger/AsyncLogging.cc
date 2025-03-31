@@ -7,15 +7,12 @@ AsyncLogging::AsyncLogging(const std::string& basename,
                             off_t rollSize,
                             int flushInterval)
     : flushInterval_(flushInterval),
-      running_(false),
       basename_(basename),
       rollSize_(rollSize),
-      thread_(std::bind(&AsyncLogging::threadFunc,this)),
+      thread_(std::bind(&AsyncLogging::threadFunc, this)),
       currentBuffer_(std::make_unique<Buffer>()),
       nextBuffer_(std::make_unique<Buffer>()){
     buffers_.reserve(16);
-    currentBuffer_->bzero();
-    nextBuffer_->bzero();
 }
 
 AsyncLogging::~AsyncLogging() {
@@ -28,7 +25,7 @@ AsyncLogging::~AsyncLogging() {
 // append()可能会被多个前端线程调用，因此必须考虑线程安全，用mutex_加锁。
 void AsyncLogging::append(const char* logline, int len) {
     std::lock_guard<std::mutex> lk(mutex_);
-    if (currentBuffer_->avail() >len) {
+    if (currentBuffer_->avail() > len) {
         // 缓冲区剩余空间足够则直接写入
         currentBuffer_->append(logline, len);
     } else {
@@ -37,7 +34,7 @@ void AsyncLogging::append(const char* logline, int len) {
         if (nextBuffer_) {
             currentBuffer_ = std::move(nextBuffer_);
         } else {
-            // 备用缓冲区也不够时，重新分配缓冲区，这种情况很少见
+            // 备用缓冲区也不够时，重新分配缓冲区
             currentBuffer_.reset(new Buffer);
         }
         currentBuffer_->append(logline, len);
@@ -50,12 +47,10 @@ void AsyncLogging::append(const char* logline, int len) {
 void AsyncLogging::threadFunc() {
     // output有写入磁盘的接口
     LogFile output(basename_, rollSize_, false);
-    // 后端缓冲区，用于归还前端的缓冲区，currentBuffer,nextBuffer
+    // 后端缓冲区，用于归还currentBuffer,nextBuffer
     BufferPtr newBuffer1(std::make_unique<Buffer>());
     BufferPtr newBuffer2(std::make_unique<Buffer>());
-    newBuffer1->bzero();
-    newBuffer2->bzero();
-    // 缓冲区数组置为16个，用于和前端缓冲区数组进行交换
+    // 后端缓冲区数组，用于和前端缓冲区数组进行交换
     BufferVector buffersToWrite;
     buffersToWrite.reserve(16);
     while (running_) {
@@ -65,7 +60,7 @@ void AsyncLogging::threadFunc() {
             //    将buffer1移动给当前缓冲，buffer2移动给空闲缓冲（如果空闲缓冲已移动的话）
             if (buffers_.empty()) {
                 //等待3秒
-                cond_.wait_for(lk,std::chrono::seconds(3));
+                cond_.wait_for(lk, std::chrono::seconds(3));
             }
             // 此时正使用的buffer也放入已满缓冲数组中（没写完也放进去，避免等待太久才刷新一次）
             buffers_.push_back(std::move(currentBuffer_));

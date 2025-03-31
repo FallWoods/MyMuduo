@@ -14,9 +14,9 @@
 class Channel;
 class EventLoop;
 
-//TcpConnection类是muduo最核心的类，唯一默认用shared_ptr来管理的类，唯一继承自enable_shared_from_this的类。
-//这是因为其生命周期模糊：可能在连接断开时，还有其他地方持有它的引用，
-//贸然delete会造成空悬指针。只有确保其他地方没有持有该对象的引用的时候，才能安全地销毁对象
+// TcpConnection类是muduo最核心的类，唯一默认用shared_ptr来管理的类，唯一继承自enable_shared_from_this的类。
+// 这是因为其生命周期模糊：可能在连接断开时，还有其他地方持有它的引用，
+// 贸然delete会造成空悬指针。只有确保其他地方没有持有该对象的引用的时候，才能安全地销毁对象
 /**
 * Tcp连接, 为服务器和客户端使用.
 * 接口类, 因此不要暴露太多细节.
@@ -63,7 +63,7 @@ public:
     void setWriteCompleteCallback(const WriteCompleteCallback& cb) { writeCompleteCallback_ = cb; }
     void setHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t highWaterMark) {
         highWaterMarkCallback_ = cb;
-        highWaterMark_=highWaterMark;
+        highWaterMark_ = highWaterMark;
     }
 
     void setCloseCallback(const CloseCallback& cb){
@@ -84,7 +84,7 @@ private:
     };
 
     void setState(StateE s){
-        state_=s;
+        state_ = s;
     }
 
     void handleRead(Timestamp receiveTime);
@@ -98,11 +98,12 @@ private:
     
     // loop线程中排队关闭写连接
     void shutdownInLoop();
-
+    
+    // 连接所属的loop
     EventLoop* loop_;
     const std::string name_;  //Tcp连接名称
     std::atomic_int state_;
-    bool reading_;            // 连接是否正在监听读事件
+    bool reading_ = true;           // 连接是否正在监听读事件
    
     // we don't expose those classes to client.
     std::unique_ptr<Socket> socket_;

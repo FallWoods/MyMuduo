@@ -7,9 +7,9 @@
 
 class Timer : public noncopyable {
 public:
-    using TimerCallback=std::function<void()>;
+    using TimerCallback = std::function<void()>;
 
-    Timer(TimerCallback cb,Timestamp when,double interval);
+    Timer(TimerCallback cb, Timestamp when, double interval);
 
     //运行时超时回调函数
     void run() const { callback_; }

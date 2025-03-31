@@ -17,7 +17,7 @@ public:
     Timestamp poll(int timeoutMs, ChannelList& activeChannels) override;
     // ADD/MOD/DEL
     void updateChannel(Channel* channel) override;
-    //DEL
+    // DEL
     void removeChannel(Channel* channel) override;
 
 private:
@@ -25,7 +25,7 @@ private:
     static const int kInitEventListSize = 16;
     // 将操作(EPOLL_CTL_Add/MOD/DEL)转换成字符串
     static const char* operationToString(int op);
-    //poll返回后将就绪的fd对应的Channel添加到activeChannels中
+    // poll返回后将就绪的fd对应的Channel添加到activeChannels中
     void fillActiveChannels(int numEvents, ChannelList& activeChannels) const;
     //由updateChannel/removeChannel调用，真正执行epoll_ctl()控制epoll的函数
     void update(int operation,Channel* channel);

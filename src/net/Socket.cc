@@ -85,7 +85,7 @@ void Socket::setTcpNoDelay(bool on) {
     ::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY, &optval, static_cast<socklen_t>(sizeof optval));
 }
 
-void Socket::setRuesAddr(bool on) {
+void Socket::setReuseAddr(bool on) {
     int optval = on ? 1 : 0;
     ::setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &optval, static_cast<socklen_t>(sizeof optval));
 }

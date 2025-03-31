@@ -10,10 +10,10 @@
 const int EpollPoller::kInitEventListSize;
 
 namespace{
-//index的3中可能的值
+// index的3中可能的值
 
-//表明此Channel对象既没有在Poller的channels_中，也没有被注册在epoll例程中
-//对这个Channel调用updateChannel(),只能是既要把他加入到channels_中，也要把它注册到epollfd中
+// 表明此Channel对象既没有在Poller的channels_中，也没有被注册在epoll例程中
+// 对这个Channel调用updateChannel(),只能是既要把他加入到channels_中，也要把它注册到epollfd中
 const int kNew = -1;
 // 表明此Channel对象以已被注册到epollfd，且在channels_中，如果对这种Channel进行updateChannel()操作，
 // 两种可能：
@@ -25,10 +25,10 @@ const int kAdded = 1;
 const int kDeleted = 2;
 }
 
-//创建epoll例程，并没有用epoll_create，而是用 epoll_create1。
-//原因在于： epoll_create1在打开epoll文件描述符时，可以直接指定FD_CLOEXEC选项，
-//相当于open时指定O_CLOSEXEC。另外，epoll_create的size参数在Linux2.6.8以后，
-//就已经没用了（>0即可），内核会实现自动增长内部数据结构以描述监听事件。
+// 创建epoll例程，并没有用epoll_create，而是用 epoll_create1。
+// 原因在于： epoll_create1在打开epoll文件描述符时，可以直接指定FD_CLOEXEC选项，
+// 相当于open时指定O_CLOSEXEC。另外，epoll_create的size参数在Linux2.6.8以后，
+// 就已经没用了（>0即可），内核会实现自动增长内部数据结构以描述监听事件。
 EpollPoller::EpollPoller(EventLoop* loop)
     : Poller(loop),
       epollfd_(::epoll_create1(EPOLL_CLOEXEC)),
@@ -72,7 +72,7 @@ Timestamp EpollPoller::poll(int timeoutMs, ChannelList& activeChannels) {
 
 // 填写活跃的Channel
 void EpollPoller::fillActiveChannels(int numEvents, ChannelList& activeChannels) const {
-    for (int i=0; i<numEvents; ++i) {
+    for (int i = 0; i < numEvents; ++i) {
         Channel* channel = channels_.find(events_[i].data.fd)->second;
         channel->set_revents(events_[i].events);
         activeChannels.push_back(channel);
@@ -82,7 +82,6 @@ void EpollPoller::fillActiveChannels(int numEvents, ChannelList& activeChannels)
 void EpollPoller::updateChannel(Channel* channel) {
     const int index = channel->index();
     // log
-    // ???
     if (index == kNew || index == kDeleted) {
         int fd = channel->fd();
         if (index == kNew) {
@@ -97,10 +96,8 @@ void EpollPoller::updateChannel(Channel* channel) {
         // 向epoll对象加入channel
         update(EPOLL_CTL_ADD, channel);
     } else {
-        //index==kAdded
+        //index == kAdded
         // update existing one with EPOLL_CTL_MOD/DEL
-        int fd = channel->fd();
-        (void)fd;
         if (channel->isNoneEvent()) {
             //如一个通道不关心任何事件，要对它进行更新，只能是暂时不再监听它
             update(EPOLL_CTL_DEL, channel);
@@ -124,11 +121,11 @@ void EpollPoller::update(int operation, Channel* channel) {
 
     if (operation == EPOLL_CTL_DEL) {
         if (::epoll_ctl(epollfd_, operation, fd, NULL) < 0) {
-            std::cout << "epol_ctl op= "<<operationToString(operation) << std::endl;
+            std::cout << "epol_ctl op= "<< operationToString(operation) << std::endl;
         }
     } else {
         if (::epoll_ctl(epollfd_, operation, fd, &event) < 0) {
-            std::cout << "epoll_ctl op= "<<operationToString(operation) << std::endl;
+            std::cout << "epoll_ctl op= "<< operationToString(operation) << std::endl;
         }
         std::cout << "successfully " << operationToString(operation) << " in pid= "<< CurrentThread::tid() <<std::endl;
     }
@@ -142,15 +139,11 @@ void EpollPoller::removeChannel(Channel* channel) {
     channels_.erase(fd);
     if (index == kAdded) {
          // 如果此fd已经被添加到epoll例程中，则还需从epoll例程中删除
-        update(EPOLL_CTL_DEL,channel);
+        update(EPOLL_CTL_DEL, channel);
     }
     // 重新设置channel的状态为未被Poller注册
     channel->set_index(kNew);
 }
-
-// bool EpollPoller::hasChannel(Channel* channel) {
-//     return (channels_.find(channel->fd()) != channels_.end() && channels_.find(channel->fd())->second == channel);
-// }
 
 const char* EpollPoller::operationToString(int op) {
     switch (op){

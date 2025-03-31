@@ -50,7 +50,7 @@ private:
     //用户添加的所有的Timer的集合
     TimerList timers_;
     //表明正在获取超时定时器
-    bool callingExpiredTimers_;
+    bool callingExpiredTimers_ = false;
 
     //所属的EventLoop
     EventLoop* loop_;

@@ -9,8 +9,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-namespace sockets
-{
+namespace sockets {
 
 ///
 /// Creates a non-blocking socket file descriptor,

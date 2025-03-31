@@ -7,19 +7,18 @@
 EventLoopThreadPool::EventLoopThreadPool(EventLoop* baseloop,const std::string& nameArg)
     : baseLoop_(baseloop),
       name_(nameArg),
-      started_(false),
-      numThreads_(0),
-      next_(0){}
+      started_(false)
+      {}
 
 EventLoopThreadPool::~EventLoopThreadPool() {
     // Don't delete loop, it's stack variable
 }
 
 void EventLoopThreadPool::start(const ThreadInitCallback& cb) {
-    started_=true;
+    started_ = true;
     for (int i=0; i<numThreads_; ++i) {
         // IO线程名称: 线程池名称 + 线程编号
-        auto threadPtr=std::make_unique<EventLoopThread>(cb,name_+std::to_string(i));
+        auto threadPtr= std::make_unique<EventLoopThread>(cb, name_ + std::to_string(i));
         loops_.push_back(threadPtr->startLoop());
         threads_.push_back(std::move(threadPtr));
     }
@@ -60,7 +59,7 @@ EventLoop* EventLoopThreadPool::getLoopForHash(size_t hashCode){
 std::vector<EventLoop*> EventLoopThreadPool::getAllLoops() {
     assert(started_);
     if (loops_.empty()) {
-        return std::vector<EventLoop*>(1,baseLoop_);
+        return std::vector<EventLoop*>(1, baseLoop_);
     } else {
         return loops_;
     }

@@ -12,7 +12,7 @@
 #include <iostream>
 
 // 防止一个线程创建多个EventLoop
-__thread EventLoop* t_loopInThisThread=nullptr;
+__thread EventLoop* t_loopInThisThread = nullptr;
 
 // 定义默认的Poller IO复用接口的超时时间
 const int kPollTimeMs = 50000;
@@ -39,7 +39,7 @@ EventLoop::EventLoop()
       poller_(Poller::newDefaultPoller(this)),
       timerQueue_(std::make_unique<TimerQueue>(this)),
       wakeupFd_(createEventfd()),
-      wakeupChannel_(new Channel(this,wakeupFd_)),
+      wakeupChannel_(new Channel(this, wakeupFd_)),
       currentActiveChannel_(nullptr),
       iteration_(0){
     //日志操作
@@ -82,15 +82,14 @@ EventLoop::~EventLoop() {
 void EventLoop::loop() {
     assert(!looping_);  //避免重复的loop
 
-    looping_=true;
-    quit_=false; // FIXME: what if someone calls quit() before loop() ?
+    looping_ = true;
+    quit_ = false; // FIXME: what if someone calls quit() before loop() ?
     while (!quit_) {
         activeChannels_.clear(); //清空激活通道列表
         //开始轮询
         std::cout<< "have polled: "<< iteration_ <<std::endl;
-        pollReturnTime_ = poller_->poll(kPollTimeMs,activeChannels_);
+        pollReturnTime_ = poller_->poll(kPollTimeMs, activeChannels_);
         ++iteration_; //轮询次数加1
-        //log
         
         //处理所有激活事件
         //TODO：sort channel by priority queue
@@ -138,7 +137,7 @@ void EventLoop::updateChannel(Channel* channel){
     poller_->updateChannel(channel);
 }
 
-//使用具体poller对象的removeChannel(),来从其中删除只当channel
+//使用具体poller对象的removeChannel(),来从其中删除指定channel
 //必须在channel所属的loop线程运行
 void EventLoop::removeChannel(Channel* channel) {
     // if(eventHandling_){
@@ -197,7 +196,7 @@ void EventLoop::queueInLoop(Functor cb){
      * TODO:
      * std::atomic_bool callingPendingFunctors_; 标志当前loop是否有需要执行的回调操作
      * 这个 || callingPendingFunctors_ 比较有必要，因为在执行回调的过程可能会加入新的回调
-     * 则这个时候也需要唤醒，否则就会发生有事件到来但是仍被阻塞住的情况
+     * 则这个时候也需要唤醒，否则就会发生有事件到来但是仍被阻塞住的情况，这样，等他处理完当前事件后，就会再次轮询，检查是否有事件发生，此时，就会被唤醒
      */
     if (!isInLoopThread() || callingPendingFunctors_) {
         wakeup();
@@ -205,9 +204,9 @@ void EventLoop::queueInLoop(Functor cb){
 }
 
 void EventLoop::wakeup() {
-    uint64_t one=1;
+    uint64_t one = 1;
     ssize_t n = write(wakeupFd_, &one, sizeof one);
-    if (n!=sizeof one) {
+    if (n != sizeof one) {
         //log
         std::cout << "EventLoop::wakeup writes " << n << " bytes instead of 8" << std::endl;
     }

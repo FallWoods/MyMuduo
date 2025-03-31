@@ -37,7 +37,7 @@ public:
     //Enable/disable TCP_NODELAY
     void setTcpNoDelay(bool on);
     //Enable/disable SO_REUSEADDR
-    void setRuesAddr(bool on);
+    void setReuseAddr(bool on);
     //Enable/disable SO_REUSEPORT
     void setReusePort(bool on);
     //Enable/disable SO_KEEPALIVE

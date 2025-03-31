@@ -3,8 +3,7 @@
 
 #include <stdlib.h>
 
-//获取默认的Poller
-
+// 获取默认的Poller
 Poller* Poller::newDefaultPoller(EventLoop *loop){
     if (::getenv("MUDUO_USE_POLL")) {
         // 生成poll实例
