@@ -1,31 +1,24 @@
 #include "InetAddress.h"
-// #include "SocketsOps.h"
 
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
 #include <netdb.h>
-// 转换用的临时缓存. 因为占用空间比较大, 不用函数栈; 又要确保线程安全, 
-// 有可能经常调用, 因此用thread local 变量
-// static __thread char t_resolveBuffer[64*1024];
-InetAddress::InetAddress(uint16_t port, std::string ip)
-{
+
+InetAddress::InetAddress(uint16_t port, std::string ip) {
     ::bzero(&addr_, sizeof(addr_));
     addr_.sin_family = AF_INET;
     addr_.sin_port = ::htons(port);
-    // addr_.sin_addr.s_addr = ::inet_addr(ip.c_str());
-    addr_.sin_addr.s_addr = htonl(INADDR_ANY); // FIXME : it should be addr.ip() and need some conversion
+    addr_.sin_addr.s_addr = ::inet_addr(ip.c_str());
 }
 
-std::string InetAddress::toIp() const
-{
+std::string InetAddress::toIp() const {
     char buf[64] = {0};
     ::inet_ntop(AF_INET, &addr_.sin_addr, buf, sizeof(buf));
     return buf;
 }
 
-std::string InetAddress::toIpPort() const
-{
+std::string InetAddress::toIpPort() const {
     char buf[64] = {0};
     ::inet_ntop(AF_INET, &addr_.sin_addr, buf, sizeof(buf));
     size_t end = ::strlen(buf);
@@ -34,18 +27,6 @@ std::string InetAddress::toIpPort() const
     return buf;
 }
 
-uint16_t InetAddress::toPort() const
-{
+uint16_t InetAddress::toPort() const {
     return ::ntohs(addr_.sin_port);
 }
-
-// // TODO: 网络字节序和主机字节序的转换函数
-
-// #if 0
-// #include <iostream>
-// int main()
-// {
-//     InetAddress addr(8080);
-//     std::cout << addr.toIpPort() << std::endl;
-// }
-// #endif

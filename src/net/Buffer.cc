@@ -10,9 +10,7 @@ Buffer::Buffer(size_t initialSize)
     : buffer_(kCheapPrepend+initialSize),
       readerIndex_(kCheapPrepend),
       writerIndex_(kCheapPrepend)
-{
-    
-}
+{}
 
 void Buffer::retrieve(size_t len){
     assert(len<=readableBytes());
@@ -23,26 +21,25 @@ void Buffer::retrieve(size_t len){
     }
 }
 
-int64_t Buffer::peekInt64()const{
+int64_t Buffer::peekInt64() const {
     assert(readableBytes() >= 8);
     int64_t res;
     memcpy(&res,peek(),8);
     return be64toh(res);
 }
-int32_t Buffer::peekInt32()const{
+int32_t Buffer::peekInt32() const {
     assert(readableBytes() >= 4);
     int32_t res;
     memcpy(&res,peek(),4);
     return be32toh(res);
 }
-int16_t Buffer::peekInt16()const{
+int16_t Buffer::peekInt16() const {
     assert(readableBytes() >= 2);
     int16_t res;
     memcpy(&res,peek(),2);
     return be16toh(res);
 }
-/* 从readable的头部peek()读取一个int8_t数据, 但不移动readerIndex_, 不会改变readable空间.
- * 1byte数据不存在字节序问题。字节序指的是不同字节之间如何排序，字节内部的顺序不变 */
+
 int8_t Buffer::peekInt8()const{
     assert(readableBytes() >= 1);
     int8_t res=*peek();
@@ -78,8 +75,7 @@ void Buffer::makeSpace(size_t len){
 }
 
 ssize_t Buffer::readFd(int fd, int& savedErrno){
-    // saved an ioctl()/FIONREAD call to tell how much to read.
-    char extrabuf[65536]; //65536=64k bytes
+    char extrabuf[65536]; //65536 = 64k bytes
     struct iovec vec[2];
     const size_t writable = writeableBytes();
     vec[0].iov_base = beginWrite();
@@ -97,8 +93,6 @@ ssize_t Buffer::readFd(int fd, int& savedErrno){
     }else {
         // 读取的数据超过现有内部buffer_的writable空间大小时, 启用备用的extrabuf 64KB空间, 并将这些数据添加到内部buffer_的末尾
         // 过程可能会合并多余prependable空间或resize buffer_大小, 以腾出足够writable空间存放数据
-        // n >= 0 and n > writable
-        // => buffer_ is full, then append extrabuf to buffer_
         writerIndex_ = buffer_.size();
         append(extrabuf, n-writable);
     }

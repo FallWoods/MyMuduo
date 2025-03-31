@@ -6,12 +6,13 @@
 
 #include <functional>
 
-// Acceptor是TcpServer的一个内部类，主要职责是用来获得新连接的fd,
-// 新建TcpConnection对象（newConn()）的时候直接传递给TcpConnection的构造函数。
-
 class EventLoop;
 class InetAddress;
 
+/** 
+ * Acceptor是TcpServer的一个内部类，主要职责是用来获得新连接的fd,
+ *新建TcpConnection对象（newConn()）的时候直接传递给TcpConnection的构造函数。
+ */
 class Acceptor : public noncopyable{
 public:
     using NewConnectionCallback = std::function<void(int sockfd, const InetAddress&)>;
@@ -37,8 +38,3 @@ private:
     bool listening_ = false; //监听状态
     // int idleFd_;  //空闲fd，fd资源不足时，可以空出来一个作为新建连接conn fd
 };
-
-// 如果fd资源不够用了，导致accept(2)/accept4(2)创建连接失败，比如达到系统上限，怎么办？
-// Accetor用了这样一种技术：先申请一个空闲的fd（idleFd_），等到发生由于fd资源不够用时，
-//就把这个备用fd暂时用于accept接收连接，然后再马上关闭，以防止不断产生可读事件（连接请求），
-//从而回调相同的失败代码。及早建立连接后并关闭连接，让程序不会频繁响应同一个连接请求

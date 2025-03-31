@@ -52,7 +52,10 @@ public:
     std::string toFormattedString(bool showMicroseconds = true) const;
 
     bool operator<(const Timestamp& rhs) const {
-        return microSecondsSinceEpoch_<rhs.microSecondsSinceEpoch_;
+        return microSecondsSinceEpoch_ < rhs.microSecondsSinceEpoch_;
+    }
+    bool operator<=(const Timestamp& rhs) const {
+        return microSecondsSinceEpoch_ <= rhs.microSecondsSinceEpoch_;
     }
     //加一个时长
     Timestamp& operator+=(double seconds) {

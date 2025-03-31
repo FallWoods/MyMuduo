@@ -11,7 +11,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-Socket::~Socket(){
+Socket::~Socket() {
     sockets::close(sockfd_);
 }
 
@@ -53,24 +53,13 @@ void Socket::bindAddress(const InetAddress& addr) {
 void Socket::listen() { ::listen(sockfd_, 256); }
 
 int Socket::accept(InetAddress* peeraddr) {
-    /**
-     * 1. accept函数的参数不合法
-     * 2. 对返回的connfd没有设置非阻塞
-     * Reactor模型 one loop per thread
-     * poller + non-blocking IO
-     **/
     sockaddr_in addr;
     socklen_t len = sizeof(addr);
     ::memset(&addr, 0, sizeof(addr));
-    // fixed : int connfd = ::accept(sockfd_, (sockaddr *)&addr, &len);
     int connfd = ::accept4(sockfd_, (sockaddr *)&addr, &len, SOCK_NONBLOCK | SOCK_CLOEXEC);
-    // int connfd = ::accept(sockfd_, (sockaddr *)&addr, &len);
-    if (connfd >= 0)
-    {
+    if (connfd >= 0) {
         peeraddr->setSockAddr(addr);
-    }
-    else
-    {
+    } else {
         std::cout << "accept4() failed" <<std::endl;
     }
     return connfd;

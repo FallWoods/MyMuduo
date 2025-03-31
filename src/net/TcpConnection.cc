@@ -14,14 +14,6 @@
 #include <netinet/tcp.h>
 
 using namespace std::placeholders;
-static EventLoop *CheckLoopNotNull(EventLoop *loop) {
-    // 如果传入EventLoop没有指向有意义的地址则出错
-    // 正常来说在 TcpServer::start 这里就生成了新线程和对应的EventLoop
-    if (loop == nullptr) {
-        std::cout << "mainLoop is null!" <<std::endl;
-    }
-    return loop;
-}
 
 TcpConnection::TcpConnection(EventLoop* loop,
                             const std::string& name,
@@ -35,7 +27,8 @@ TcpConnection::TcpConnection(EventLoop* loop,
       channel_(new Channel(loop, sockfd)),
       localAddr_(localAddr),
       peerAddr_(peerAddr),
-      highWaterMark_(64 * 1024 * 1024){
+      highWaterMark_(64 * 1024 * 1024)
+{
     // 下面给channel设置相应的回调函数 poller给channel通知感兴趣的事件发生了 channel会回调相应的回调函数
     channel_->setReadCallback(std::bind(&TcpConnection::handleRead, this, std::placeholders::_1));
     channel_->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
@@ -52,9 +45,7 @@ TcpConnection::~TcpConnection(){
     assert(state_ == kDisconnected);
 }
 
-//发送数据
-
-// 转发给send(const StringPiece&), 最终转交给sendInLoop(const char*, int)
+//发送数据，转发给send(const StringPiece&), 最终转交给sendInLoop(const char*, int)
 void TcpConnection::send(const void *message, int len){
     send(std::string(static_cast<const char*>(message), len));
 }
@@ -70,8 +61,7 @@ void TcpConnection::send(const std::string& message) {
             // 当前线程是所属loop线程
             sendInLoop(message.c_str(), message.size());
         } else {
-            // 当前线程并非所属loop线程
-            // 遇到重载函数的绑定，可以使用函数指针来指定确切的函数
+            // 当前线程并非所属loop线程，遇到重载函数的绑定，可以使用函数指针来指定确切的函数
             void(TcpConnection::*fp)(const void*, size_t) = &TcpConnection::sendInLoop;
             loop_->runInLoop(std::bind(fp, this, message.c_str(), message.size()));
         }
@@ -79,7 +69,6 @@ void TcpConnection::send(const std::string& message) {
 }
 
 // 转交给sendInLoop(const char*, int)
-// FIXME efficiency!!
 void TcpConnection::send(Buffer* buf) {
     if (state_ == kConnected) {
         if (loop_->isInLoopThread()) {
@@ -99,13 +88,12 @@ void TcpConnection::sendInLoop(const std::string& message) {
     sendInLoop(message.data(),message.size());
 }
 
-//send函数用于发送数据，要么直接发送到套接字的输出缓冲区，要么发送到OutBuffer中,发送到OutBuffer中后，要注册可写事件，当事件发生发生时，再在handleWrite中写。
 /**
-* 在所属loop线程中, 发送data[len]
-* @param data 要发送的缓冲区首地址
-* @param len　要发送的缓冲区大小(bytes)
-* @details 发生write错误, 如果发送缓冲区未满,　对端已发FIN/RST分节 表明tcp连接发生致命错误(faultError为true)
-*/
+ * 在所属loop线程中, 发送data[len]
+ * @param data 要发送的缓冲区首地址
+ * @param len　要发送的缓冲区大小(bytes)
+ * @details 发生write错误, 如果发送缓冲区未满,　对端已发FIN/RST分节 表明tcp连接发生致命错误(faultError为true)
+ */
 void TcpConnection::sendInLoop(const void* data, size_t len) {
     ssize_t nwrote = 0;
     size_t remaining = len;
@@ -116,7 +104,6 @@ void TcpConnection::sendInLoop(const void* data, size_t len) {
         return;
     }
     // write一次, 往对端发送数据, 后面再看是否发生错误, 是否需要高水位回调
-    // if no thing output queue, try writing directly
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0) {
         // 如果通道没有监听可写事件, 并且outputBuffer没有待发送数据, 就直接通过socket写
         nwrote = sockets::write(channel_->fd(), data, len);
@@ -130,10 +117,9 @@ void TcpConnection::sendInLoop(const void* data, size_t len) {
             nwrote = 0;
             if (errno != EWOULDBLOCK) {
                 // EWOULDBLOCK: 输出缓冲区已满, 且fd已设为nonblocking，那么把剩下的数据发送到应用层的输出缓冲区
-                //log
                 std::cout << "TcpConnection::sendInLoop" <<std::endl;
                 if (errno == EPIPE || errno == ECONNRESET) {
-                    // EPIPE: reading end is closed; ECONNRESET: connection reset by peer
+                    // EPIPE: 读端已经关闭; ECONNRESET: 对方重置了连接
                     faultError = true; 
                 }
             }
@@ -152,23 +138,22 @@ void TcpConnection::sendInLoop(const void* data, size_t len) {
         outputBuffer_.append(static_cast<const char*>(data)+nwrote, remaining);
         // 使当前套接字的channel监听可写事件
         if (!channel_->isWriting()) {
-            // 如果没有在监听通道可写事件, 就使监听通道可写事件
-            // 这里一定要注册channel的写事件 否则poller不会给channel通知epollout
+            // 如果没有在监听通道可写事件, 就使监听通道可写事件，等待通知
             channel_->enableWriting();
         }
     }
 }
 
-//关闭单向写连接，转交函数
+// 关闭单向写连接，转交函数
 void TcpConnection::shutdown() {
-    // FIXME: use compare and swap
+    // 原子化？
     if (state_ == kConnected) {
         setState(kDisconnecting);
-        // FIXME: shared_from_this()?
         loop_->runInLoop(std::bind(&TcpConnection::shutdownInLoop, shared_from_this()));
     }
 }
-//执行实际工作
+
+// 执行实际工作
 void TcpConnection::shutdownInLoop() {
     //有待写数据的时候，会注册可写事件；因此，若没有注册可写事件，说明我们当前没有待写数据，可以关闭写连接
     if (!channel_->isWriting()) {
@@ -193,12 +178,15 @@ void TcpConnection::connectEstablished() {
     connectionCallback_(shared_from_this());
 }
 
-// 在TcpServer::newConnection()为新连接创建TcpConnection对象时，
-//会将此TcpConnection对象的closeCallback_设置为TcpServer::removeConnection()，而removeConnection()最终会调用TcpConnection::connectDestroyed()来销毁连接资源。
 /**
-* 销毁当前tcp连接, 移除通道事件
-* @note 只有处于已连接状态(kConnected)的tcp连接, 才需要先更新状态, 关闭通道事件监听
-*/
+ * 在TcpServer::newConnection()为新连接创建TcpConnection对象时，
+ * 会将此TcpConnection对象的closeCallback_设置为TcpServer::removeConnection()，
+ * 而removeConnection()最终会调用TcpConnection::connectDestroyed()来销毁连接资源。
+ */ 
+/**
+ * 销毁当前tcp连接, 移除通道事件
+ * @note 只有处于已连接状态(kConnected)的tcp连接, 才需要先更新状态, 关闭通道事件监听
+ */
 void TcpConnection::connectDestroyed() {
     if (state_ == kConnected) {  // 只有kConnected的连接, 才有必要采取断开连接动作
         setState(kDisconnected);
@@ -254,21 +242,16 @@ void TcpConnection::handleWrite() {
         }
     } else {
         // state_不为写状态
-        //log
         std::cout << "TcpConnection fd=" << channel_->fd() << " is down, no more writing" <<std::endl;
     }
 }
 
-// 被动关闭连接
-// 当收到对端FIN=1的消息时即EOF时，触发读事件，本地read返回0,，Tcp连接被动关闭，会触发调用本地TcpConnection::handleClose()
 /**
-* 处理Tcp连接关闭
-* @details 更新状态为kDisconnected, 清除所有事件通道监听
-* @note 必须在所属loop线程中运行.
-*/
+ * 处理Tcp连接关闭，被动关闭连接，当收到对端FIN=1的消息时即EOF时，触发读事件，本地read返回0,，Tcp连接被动关闭，会触发调用本地TcpConnection::handleClose()
+ * @details 更新状态为kDisconnected, 清除所有事件通道监听
+ * @note 必须在所属loop线程中运行.
+ */
 void TcpConnection::handleClose(){
-    //log
-    // we don't close fd, leave it to dtor, so we can find leaks easily.
     setState(kDisconnected);  // 更新Tcp连接状态，设置为关闭连接状态
     channel_->disableAll();   // 停止监听所有通道事件
 
@@ -277,20 +260,22 @@ void TcpConnection::handleClose(){
     closeCallback_(guardTHis);       //　关闭连接回调
 }
 
-// Channel在处理通道事件handleEvent时，如果发生错误（既不是读取数据，也不是写数据完成），
-// 调用链路：
-// Channel::handleEvent() => 检测到错误，调用Channel::errorCallback_ => TcpConnection::handleError()
 /**
-* 处理tcp连接错误, 打印错误log
-* @details 从tcp协议栈获取错误信息
-*/
+ * Channel在处理通道事件handleEvent时，如果发生错误（既不是读取数据，也不是写数据完成），
+ * 调用链路：
+ *Channel::handleEvent() => 检测到错误，调用Channel::errorCallback_ => TcpConnection::handleError()
+ */
+/**
+ * 处理tcp连接错误, 打印错误log
+ * @details 从tcp协议栈获取错误信息
+ */
 void TcpConnection::handleError(){
     int err = sockets::getSocketError(channel_->fd());
     //log
     std::cout << "cpConnection::handleError name:" << name_ << " - SO_ERROR:" << err <<std::endl;
 }
 
-//获取string形式的Tcp连接信息
+// 获取string形式的Tcp连接信息
 std::string TcpConnection::getTcpInfoString() const{
     char  buf[1024];
     buf[0] = '\0';

@@ -11,9 +11,6 @@
 
 namespace sockets {
 
-///
-/// Creates a non-blocking socket file descriptor,
-/// abort if any error.
 int createNonblockingOrDie(sa_family_t family);
 
 int  connect(int sockfd, const struct sockaddr* addr);

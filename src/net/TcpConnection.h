@@ -14,15 +14,13 @@
 class Channel;
 class EventLoop;
 
-// TcpConnection类是muduo最核心的类，唯一默认用shared_ptr来管理的类，唯一继承自enable_shared_from_this的类。
-// 这是因为其生命周期模糊：可能在连接断开时，还有其他地方持有它的引用，
-// 贸然delete会造成空悬指针。只有确保其他地方没有持有该对象的引用的时候，才能安全地销毁对象
 /**
-* Tcp连接, 为服务器和客户端使用.
-* 接口类, 因此不要暴露太多细节.
-* 
-* @note 继承自std::enable_shared_from_this的类, 可以用getSelf返回用std::shared_ptr管理的this指针
-*/
+ * Tcp连接, 为服务器和客户端使用.
+ * 用shared_ptr来管理的类，继承自enable_shared_from_this的类。
+ * 可能在连接断开时，还有其他地方持有它的引用，贸然delete会造成空悬指针。
+ * 只有确保其他地方没有持有该对象的引用的时候，才能安全地销毁对象
+ * @note 继承自std::enable_shared_from_this的类, 可以用getSelf返回用std::shared_ptr管理的this指针
+ */
 class TcpConnection : public noncopyable,
                     public std::enable_shared_from_this<TcpConnection> {
 public:
@@ -40,7 +38,6 @@ public:
     
     bool connected() const { return state_ == kConnected; }
     bool disconnected() const { return state_ == kDisconnected; }
-    // NOT thread safe, may race with start/stopReadInLoop
     bool isReading() const { return reading_; }
     
     std::string getTcpInfoString() const;
@@ -53,7 +50,7 @@ public:
     void send(Buffer* message);
     
     //关闭连接
-    void shutdown(); // NOT thread safe, no simultaneous calling
+    void shutdown();
 
     void setTcpNoDElay(bool on) { socket_->setTcpNoDelay(on); }
 
@@ -70,10 +67,8 @@ public:
         closeCallback_ = cb;
     }
 
-    // called when TcpServer accepts a new connection
-    void connectEstablished();   // should be called only once
-    // called when TcpServer has removed me from its map
-    void connectDestroyed();  // should be called only once
+    void connectEstablished();
+    void connectDestroyed();
 
 private:
     enum StateE{
@@ -103,9 +98,8 @@ private:
     EventLoop* loop_;
     const std::string name_;  //Tcp连接名称
     std::atomic_int state_;
-    bool reading_ = true;           // 连接是否正在监听读事件
+    bool reading_ = true;     // 连接是否正在监听读事件
    
-    // we don't expose those classes to client.
     std::unique_ptr<Socket> socket_;
     std::unique_ptr<Channel> channel_;
     

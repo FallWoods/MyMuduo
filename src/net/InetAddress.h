@@ -6,17 +6,17 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string>
-//sockaddr_in的包装类
-//POD(Plain Old Data)接口类，便于C++和C之间数据类型的兼容
 
-
+/**
+ * sockaddr_in的包装类
+ * POD(Plain Old Data)接口类，便于C++和C之间数据类型的兼容
+ */
 class InetAddress {
 public:
     explicit InetAddress(uint16_t port = 0, std::string ip = "127.0.0.1");
     explicit InetAddress(const sockaddr_in &addr)
         : addr_(addr)
-    {
-    }
+    {}
 
     std::string toIp() const;
     std::string toIpPort() const;
