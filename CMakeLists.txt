@@ -1,8 +1,8 @@
 # 指定使用 CMake 的最低版本号
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.30)
 
 # 设置项目名称
-project(tiny_network C CXX)
+project(mymuduo C CXX)
 
 # 添加头文件的搜索路径
 include_directories(
@@ -33,8 +33,8 @@ set(CXX_FLAGS
     -std=c++11
     )
 
-# 生成动态库 tiny_network
-add_library(tiny_network SHARED 
+# 生成动态库 mymuduo
+add_library(mymuduo SHARED 
             ${SRC_BASE}
             ${SRC_NET}
             ${SRC_POLLER}
@@ -46,7 +46,7 @@ add_library(tiny_network SHARED
             )
 
 # 目标动态库所需连接的库（这里需要连接libpthread.so）
-target_link_libraries(tiny_network pthread) # mysqlclient
+target_link_libraries(mymuduo pthread) # mysqlclient
 
 # 设置生成动态库的路径，放在根目录的lib文件夹下面
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -55,7 +55,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
 # 将目录安装到 include/tiny_network 下（只安装头文件）
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/ DESTINATION include/tiny_network
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/ DESTINATION include/mymuduo
         FILES_MATCHING PATTERN "*.h")
 
 # 加载example下的CMakeLists文件
